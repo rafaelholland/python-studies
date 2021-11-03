@@ -1,38 +1,55 @@
 # Concerned with storing and retrieving books from a json file.
-import json
+import sqlite3
 
-books_file = 'books.json'
 
 def create_book_table():
-    with open(books_file, 'w') as file:
-        json.dump([], file)
+    connect = sqlite3.connect('data.db')
+    cursor = connect.cursor()
+
+    cursor.execute('create table if not exists books(name text primary key, author text, read integer)')
+    connect.commit()
+    connect.close()
+
 
 def add_book(name, author):
-    books = get_all_books()
-    books.append({'name': name, 'author': author, 'read': False})
-    _save_all_books(books)
+    #
+    connect = sqlite3.connect('data.db')
+    cursor = connect.cursor()
+    try:
+        cursor.execute('INSERT INTO BOOKS VALUES (?, ?, 0)', (name, author))
+    except:
+        print('Book already listed on our database')
+
+    connect.commit()
+    connect.close()
 
 
 def get_all_books():
-    with open(books_file, 'r') as file:
-       return json.load(file)
+    connect = sqlite3.connect('data.db')
+    cursor = connect.cursor()
 
+    cursor.execute('select * from books')
+    books = [{'name': row[0], 'author': row[1], 'read': row[2]} for row in
+             cursor.fetchall()]  # [(name, author, read), (name, author, read)]
+    connect.close()
+    return books
 
-# rewrite the file
-def _save_all_books(books):
-    with open(books_file, 'w') as file:
-        json.dump(books, file)
 
 def mark_book_as_read(name):
-    books = get_all_books()
-    for book in books:
-        if book['name'] == name:
-            book['read'] = '1'
-    _save_all_books(books)
+    connect = sqlite3.connect('data.db')
+    cursor = connect.cursor()
 
+    cursor.execute('update books set read = 1 where name = ?', (name,))
+
+    connect.commit()
+    connect.close()
 
 
 def delete_book(name):
-    books = get_all_books()
-    books = [book for book in books if book['name'] != name]
-    _save_all_books(books)
+    connect = sqlite3.connect('data.db')
+    cursor = connect.cursor()
+
+    cursor.execute('delete from books where name = ?', (name,))
+
+    connect.commit()
+    connect.close()
