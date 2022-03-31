@@ -1,0 +1,3 @@
+masculino;teste1;teste2;teste3
+feminino;teste1;teste2;teste3
+crianca;teste1;teste2;teste3
